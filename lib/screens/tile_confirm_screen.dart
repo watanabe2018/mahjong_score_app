@@ -143,18 +143,17 @@ class _TileConfirmScreenState extends State<TileConfirmScreen> {
               ],
             ),
           ),
-          SizedBox(
-            height: 80,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: _tiles.length,
-              itemBuilder: (context, i) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: InputChip(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: List.generate(_tiles.length, (i) {
+                return InputChip(
                   label: Text(_label(_tiles[i]), style: const TextStyle(fontSize: 16)),
                   onDeleted: () => _removeAt(i),
-                ),
-              ),
+                );
+              }),
             ),
           ),
           const Divider(),
