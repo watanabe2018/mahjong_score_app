@@ -35,7 +35,6 @@ class _CameraScreenState extends State<CameraScreen> {
       final result = await ApiService.recognizeTiles(
         imageBytes: bytes,
         mediaType: mediaType,
-        password: widget.password,
       );
       if (!mounted) return;
       Navigator.of(context).push(

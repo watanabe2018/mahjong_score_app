@@ -1,0 +1,17 @@
+/// アプリ全体の設定値のテンプレート
+///
+/// 使い方: このファイルを `config.dart` としてコピーし、
+/// anthropicApiKey にローカルテスト用のAPIキーを入力してください。
+/// `config.dart` は .gitignore で除外されているため、コミットされません。
+///
+/// [重要] このキーはFlutter Webのビルド後、ブラウザにJavaScript/Wasmとして
+/// 配信されるため、ブラウザの開発者ツールから誰でも読み取れます。
+/// GitHub Pagesへのデプロイ時は、このファイルの内容は使われず、
+/// GitHub Actionsが `ANTHROPIC_API_KEY` リポジトリシークレットから自動生成します。
+/// 対策として、Anthropic Consoleで利用上限(Spending Limit)を必ず設定することを
+/// 強くおすすめします → https://console.anthropic.com/settings/limits
+class AppConfig {
+  static const String anthropicApiKey = 'ここにローカル用のAPIキーを入力';
+  static const String recognitionModel = 'claude-sonnet-5';
+  static const String passwordStorageKey = 'app_shared_password';
+}

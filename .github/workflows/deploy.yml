@@ -1,4 +1,4 @@
-﻿name: Deploy Flutter Web to GitHub Pages
+name: Deploy Flutter Web to GitHub Pages
 
 on:
   push:
@@ -26,6 +26,18 @@ jobs:
 
       - run: flutter pub get
 
+      # シークレットからconfig.dartを生成(gitには一切コミットしない)
+      - name: Generate config.dart from secret
+        run: |
+          cat > lib/config.dart << EOF
+          class AppConfig {
+            static const String anthropicApiKey = '${{ secrets.ANTHROPIC_API_KEY }}';
+            static const String recognitionModel = 'claude-sonnet-5';
+            static const String passwordStorageKey = 'app_shared_password';
+          }
+          EOF
+
+      # base-href はリポジトリ名に合わせる (例: https://<user>.github.io/<repo>/)
       - run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
 
       - uses: actions/upload-pages-artifact@v3
