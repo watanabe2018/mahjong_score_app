@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/called_meld_draft.dart';
 import 'input_screen.dart';
 import 'widgets/tile_picker_dialog.dart';
+import 'widgets/tile_style.dart';
 
 class TileConfirmScreen extends StatefulWidget {
   final List<String> initialTileCodes;
@@ -149,8 +150,12 @@ class _TileConfirmScreenState extends State<TileConfirmScreen> {
               spacing: 6,
               runSpacing: 6,
               children: List.generate(_tiles.length, (i) {
+                final code = _tiles[i];
                 return InputChip(
-                  label: Text(_label(_tiles[i]), style: const TextStyle(fontSize: 16)),
+                  label: Text(_label(code), style: TextStyle(fontSize: 16, color: TileStyle.textColor(code))),
+                  backgroundColor: TileStyle.backgroundColor(code),
+                  side: BorderSide(color: TileStyle.borderColor(code)),
+                  deleteIconColor: TileStyle.textColor(code),
                   onDeleted: () => _removeAt(i),
                 );
               }),
@@ -176,7 +181,14 @@ class _TileConfirmScreenState extends State<TileConfirmScreen> {
                   },
                   child: Card(
                     margin: const EdgeInsets.all(2),
-                    child: Center(child: Text(_label(code))),
+                    color: TileStyle.backgroundColor(code),
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(color: TileStyle.borderColor(code)),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Center(
+                      child: Text(_label(code), style: TextStyle(color: TileStyle.textColor(code), fontWeight: FontWeight.bold)),
+                    ),
                   ),
                 );
               },

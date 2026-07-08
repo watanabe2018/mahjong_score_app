@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'tile_style.dart';
 
 /// 汎用の牌選択ダイアログ。選ばれた牌コード(例: "3p")を返す。
 /// [allowRed] が true の場合、5の牌は長押しで赤ドラとして選べる("0p"等を返す)。
@@ -60,7 +61,14 @@ class TilePickerDialog extends StatelessWidget {
                   : null,
               child: Card(
                 margin: const EdgeInsets.all(2),
-                child: Center(child: Text(_label(code))),
+                color: TileStyle.backgroundColor(code),
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(color: TileStyle.borderColor(code)),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Center(
+                  child: Text(_label(code), style: TextStyle(color: TileStyle.textColor(code), fontWeight: FontWeight.bold)),
+                ),
               ),
             );
           },

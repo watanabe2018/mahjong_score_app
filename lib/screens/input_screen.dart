@@ -7,6 +7,7 @@ import '../logic/score_calculator.dart';
 import '../logic/dora_calculator.dart';
 import 'result_screen.dart';
 import 'widgets/tile_picker_dialog.dart';
+import 'widgets/tile_style.dart';
 
 class InputScreen extends StatefulWidget {
   final List<String> tileCodes; // 面前部分(鳴き分を除いた残りの手牌)
@@ -145,7 +146,10 @@ class _InputScreenState extends State<InputScreen> {
             final indicator = Tile.fromString(indicators[i]);
             final doraTile = DoraCalculator.doraTileFor(indicator);
             return InputChip(
-              label: Text('${_label(indicators[i])} → ${_label(doraTile.code)}がドラ'),
+              label: Text('${_label(indicators[i])} → ${_label(doraTile.code)}がドラ',
+                  style: TextStyle(color: TileStyle.textColor(indicators[i]))),
+              backgroundColor: TileStyle.backgroundColor(indicators[i]),
+              side: BorderSide(color: TileStyle.borderColor(indicators[i])),
               onDeleted: () => setState(() => indicators.removeAt(i)),
             );
           }),
@@ -165,7 +169,11 @@ class _InputScreenState extends State<InputScreen> {
             const Text('鳴き', style: TextStyle(fontWeight: FontWeight.bold)),
             Wrap(
               spacing: 8,
-              children: widget.calledMelds.map((m) => Chip(label: Text(m.label))).toList(),
+              children: widget.calledMelds.map((m) => Chip(
+                label: Text(m.label, style: TextStyle(color: TileStyle.textColor(m.baseTileCode))),
+                backgroundColor: TileStyle.backgroundColor(m.baseTileCode),
+                side: BorderSide(color: TileStyle.borderColor(m.baseTileCode)),
+              )).toList(),
             ),
             const SizedBox(height: 8),
           ],
@@ -175,8 +183,11 @@ class _InputScreenState extends State<InputScreen> {
             spacing: 8,
             children: widget.tileCodes.toSet().map((code) {
               return ChoiceChip(
-                label: Text(_label(code)),
+                label: Text(_label(code), style: TextStyle(color: TileStyle.textColor(code))),
                 selected: _winningTileCode == code,
+                backgroundColor: TileStyle.backgroundColor(code),
+                selectedColor: TileStyle.borderColor(code),
+                side: BorderSide(color: TileStyle.borderColor(code)),
                 onSelected: (_) => setState(() => _winningTileCode = code),
               );
             }).toList(),
