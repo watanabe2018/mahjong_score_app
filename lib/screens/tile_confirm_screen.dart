@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/called_meld_draft.dart';
+import '../models/tile.dart';
+import '../logic/dora_calculator.dart';
 import 'input_screen.dart';
 import 'widgets/tile_picker_dialog.dart';
 import 'widgets/tile_style.dart';
@@ -20,11 +22,15 @@ class TileConfirmScreen extends StatefulWidget {
 class _TileConfirmScreenState extends State<TileConfirmScreen> {
   late List<String> _tiles;
   final List<CalledMeldDraft> _melds = [];
+  final List<String> _doraIndicators = [];
+  int _akaDoraCount = 0;
 
   @override
   void initState() {
     super.initState();
     _tiles = List.from(widget.initialTileCodes);
+    // 認識結果や手動選択で既に赤5として入力されている枚数を初期値にする
+    _akaDoraCount = _tiles.where((c) => c.startsWith('0')).length;
   }
 
   /// 面前(手の中)で必要な残り牌数。鳴き1つにつき3枚分減る。
@@ -52,6 +58,12 @@ class _TileConfirmScreenState extends State<TileConfirmScreen> {
   }
 
   void _removeMeld(int index) => setState(() => _melds.removeAt(index));
+
+  Future<void> _addDoraIndicator() async {
+    final code = await TilePickerDialog.show(context);
+    if (code == null) return;
+    setState(() => _doraIndicators.add(code));
+  }
 
   List<String> _allTileCodes() {
     final list = <String>[];
@@ -146,19 +158,86 @@ class _TileConfirmScreenState extends State<TileConfirmScreen> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: List.generate(_tiles.length, (i) {
-                final code = _tiles[i];
-                return InputChip(
-                  label: Text(_label(code), style: TextStyle(fontSize: 16, color: TileStyle.textColor(code))),
-                  backgroundColor: TileStyle.backgroundColor(code),
-                  side: BorderSide(color: TileStyle.borderColor(code)),
-                  deleteIconColor: TileStyle.textColor(code),
-                  onDeleted: () => _removeAt(i),
-                );
-              }),
+            child: SizedBox(
+              height: 130,
+              child: SingleChildScrollView(
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: List.generate(_tiles.length, (i) {
+                    final code = _tiles[i];
+                    return InputChip(
+                      label: Text(_label(code), style: TextStyle(fontSize: 16, color: TileStyle.textColor(code))),
+                      backgroundColor: TileStyle.backgroundColor(code),
+                      side: BorderSide(color: TileStyle.borderColor(code)),
+                      deleteIconColor: TileStyle.textColor(code),
+                      onDeleted: () => _removeAt(i),
+                    );
+                  }),
+                ),
+              ),
+            ),
+          ),
+          const Divider(),
+
+          // --- ドラ表示牌セクション ---
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              children: [
+                Text('ドラ表示牌', style: Theme.of(context).textTheme.titleMedium),
+                const Spacer(),
+                TextButton.icon(
+                  onPressed: _addDoraIndicator,
+                  icon: const Icon(Icons.add),
+                  label: const Text('表示牌を追加'),
+                ),
+              ],
+            ),
+          ),
+          if (_doraIndicators.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: List.generate(_doraIndicators.length, (i) {
+                  final indicator = Tile.fromString(_doraIndicators[i]);
+                  final doraTile = DoraCalculator.doraTileFor(indicator);
+                  return InputChip(
+                    label: Text('${_label(_doraIndicators[i])} → ${_label(doraTile.code)}がドラ',
+                        style: TextStyle(color: TileStyle.textColor(_doraIndicators[i]))),
+                    backgroundColor: TileStyle.backgroundColor(_doraIndicators[i]),
+                    side: BorderSide(color: TileStyle.borderColor(_doraIndicators[i])),
+                    onDeleted: () => setState(() => _doraIndicators.removeAt(i)),
+                  );
+                }),
+              ),
+            ),
+          const Divider(),
+
+          // --- 赤ドラ枚数セクション ---
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              children: [
+                Text('赤ドラ枚数', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(width: 16),
+                IconButton(
+                  onPressed: () => setState(() => _akaDoraCount = (_akaDoraCount - 1).clamp(0, 4)),
+                  icon: const Icon(Icons.remove_circle_outline),
+                ),
+                Text('$_akaDoraCount 枚', style: const TextStyle(fontSize: 16)),
+                IconButton(
+                  onPressed: () => setState(() => _akaDoraCount = (_akaDoraCount + 1).clamp(0, 4)),
+                  icon: const Icon(Icons.add_circle_outline),
+                ),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text('※ 手牌で「赤5m」等を選んでいれば自動で反映されますが、ここで調整もできます',
+                      style: TextStyle(color: Colors.grey, fontSize: 11)),
+                ),
+              ],
             ),
           ),
           const Divider(),
@@ -205,6 +284,8 @@ class _TileConfirmScreenState extends State<TileConfirmScreen> {
                             builder: (_) => InputScreen(
                               tileCodes: _tiles,
                               calledMelds: _melds,
+                              doraIndicators: _doraIndicators,
+                              akaDoraCount: _akaDoraCount,
                             ),
                           ),
                         )

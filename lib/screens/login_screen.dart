@@ -23,17 +23,15 @@ class _LoginScreenState extends State<LoginScreen> {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getString(AppConfig.passwordStorageKey);
     if (saved != null && saved.isNotEmpty) {
-      // 保存済みパスワードがあれば直接カメラ画面へ
-      // (実際の正当性はバックエンド呼び出し時に401で検証される)
-      if (mounted) _goNext(saved);
+      if (mounted) _goNext();
       return;
     }
     setState(() => _checking = false);
   }
 
-  void _goNext(String password) {
+  void _goNext() {
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => CameraScreen(password: password)),
+      MaterialPageRoute(builder: (_) => const CameraScreen()),
     );
   }
 
@@ -42,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (pw.isEmpty) return;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(AppConfig.passwordStorageKey, pw);
-    if (mounted) _goNext(pw);
+    if (mounted) _goNext();
   }
 
   @override
@@ -59,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             const Icon(Icons.lock_outline, size: 64),
             const SizedBox(height: 16),
-            const Text('合言葉を入力してください', style: TextStyle(fontSize: 16)),
+            const Text('簡易ロック(任意の文字でOK)', style: TextStyle(fontSize: 16)),
             const SizedBox(height: 24),
             TextField(
               controller: _controller,

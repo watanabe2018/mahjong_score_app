@@ -5,8 +5,7 @@ import '../services/api_service.dart';
 import 'tile_confirm_screen.dart';
 
 class CameraScreen extends StatefulWidget {
-  final String password;
-  const CameraScreen({super.key, required this.password});
+  const CameraScreen({super.key});
   @override
   State<CameraScreen> createState() => _CameraScreenState();
 }

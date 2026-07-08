@@ -12,7 +12,15 @@ import 'widgets/tile_style.dart';
 class InputScreen extends StatefulWidget {
   final List<String> tileCodes; // 面前部分(鳴き分を除いた残りの手牌)
   final List<CalledMeldDraft> calledMelds;
-  const InputScreen({super.key, required this.tileCodes, this.calledMelds = const []});
+  final List<String> doraIndicators; // 牌確認画面で選んだドラ表示牌
+  final int akaDoraCount; // 牌確認画面で入力した赤ドラ枚数
+  const InputScreen({
+    super.key,
+    required this.tileCodes,
+    this.calledMelds = const [],
+    this.doraIndicators = const [],
+    this.akaDoraCount = 0,
+  });
 
   @override
   State<InputScreen> createState() => _InputScreenState();
@@ -28,7 +36,6 @@ class _InputScreenState extends State<InputScreen> {
   bool _ippatsu = false;
   int _roundWind = 1;
   int _seatWind = 1;
-  final List<String> _doraIndicators = [];
   final List<String> _uraDoraIndicators = [];
 
   bool get _isMenzen => widget.calledMelds.every(
@@ -66,13 +73,13 @@ class _InputScreenState extends State<InputScreen> {
 
       // ドラ計算: 手牌全体(面前+鳴き)から表示牌に対応する牌の枚数を数える
       final allHandTiles = [...concealed, ...calledMelds.expand((m) => m.tiles)];
-      final doraIndicatorTiles = _doraIndicators.map((c) => Tile.fromString(c)).toList();
+      final doraIndicatorTiles = widget.doraIndicators.map((c) => Tile.fromString(c)).toList();
       final uraDoraIndicatorTiles = _uraDoraIndicators.map((c) => Tile.fromString(c)).toList();
       final doraCount = DoraCalculator.countDora(doraIndicatorTiles, allHandTiles);
       final uraDoraCount = (_riichi || _doubleRiichi)
           ? DoraCalculator.countDora(uraDoraIndicatorTiles, allHandTiles)
           : 0;
-      final akaDoraCount = DoraCalculator.countAkaDora(allHandTiles);
+      final akaDoraCount = widget.akaDoraCount;
 
       final ctx = GameContext(
         roundWind: _roundWind,
@@ -270,14 +277,29 @@ class _InputScreenState extends State<InputScreen> {
             ),
           const Divider(height: 32),
 
-          _doraIndicatorSection('ドラ表示牌', _doraIndicators),
-          if (_riichi || _doubleRiichi) ...[
+          if (widget.doraIndicators.isNotEmpty) ...[
+            const Text('ドラ表示牌(牌確認画面で選択済み)', style: TextStyle(fontWeight: FontWeight.bold)),
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: widget.doraIndicators.map((code) {
+                final doraTile = DoraCalculator.doraTileFor(Tile.fromString(code));
+                return Chip(
+                  label: Text('${_label(code)} → ${_label(doraTile.code)}がドラ',
+                      style: TextStyle(color: TileStyle.textColor(code))),
+                  backgroundColor: TileStyle.backgroundColor(code),
+                  side: BorderSide(color: TileStyle.borderColor(code)),
+                );
+              }).toList(),
+            ),
             const SizedBox(height: 16),
+          ],
+          if (_riichi || _doubleRiichi) ...[
             _doraIndicatorSection('裏ドラ表示牌', _uraDoraIndicators),
           ],
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(vertical: 8),
-            child: Text('※ 赤ドラは手牌の中で赤5として選んだ牌から自動でカウントされます',
+            child: Text('赤ドラ: ${widget.akaDoraCount}枚(牌確認画面で入力済み)',
                 style: TextStyle(color: Colors.grey, fontSize: 12)),
           ),
 
