@@ -68,7 +68,9 @@ class ApiService {
       },
       body: jsonEncode({
         'model': AppConfig.recognitionModel,
-        'max_tokens': 1024,
+        'max_tokens': 2048,
+        // 単純な認識タスクなので思考は最小限にし、テキスト出力のトークンを確保する
+        'output_config': {'effort': 'low'},
         'messages': [
           {
             'role': 'user',
@@ -96,13 +98,25 @@ class ApiService {
     }
 
     final json = jsonDecode(response.body) as Map<String, dynamic>;
+
+    // Anthropic APIがエラーオブジェクトを返した場合(200以外で弾かれなかった場合の保険)
+    if (json['type'] == 'error') {
+      final errMsg = json['error']?['message'] ?? response.body;
+      throw ApiException('APIエラー: $errMsg');
+    }
+
     final content = json['content'] as List<dynamic>? ?? [];
     final textBlock = content.firstWhere(
-      (b) => b['type'] == 'text',
+      (b) => b is Map && b['type'] == 'text',
       orElse: () => null,
     );
     if (textBlock == null) {
-      throw ApiException('認識結果を取得できませんでした');
+      // デバッグ用に生のレスポンスをそのまま表示する
+      throw ApiException(
+        '認識結果を取得できませんでした。\n'
+        'stop_reason: ${json['stop_reason']}\n'
+        'raw: ${response.body}',
+      );
     }
 
     final rawText = textBlock['text'] as String;
