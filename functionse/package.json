@@ -1,0 +1,17 @@
+{
+  "name": "mahjong-app-functions",
+  "description": "麻雀符計算アプリ用 画像認識プロキシ(Firebase Cloud Functions)",
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "scripts": {
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "dependencies": {
+    "firebase-functions": "^6.0.0",
+    "firebase-admin": "^12.0.0"
+  },
+  "private": true
+}
